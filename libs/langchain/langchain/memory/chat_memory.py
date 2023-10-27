@@ -1,10 +1,9 @@
 from abc import ABC
 from typing import Any, Dict, Optional, Tuple
 
-from pydantic import Field
-
 from langchain.memory.chat_message_histories.in_memory import ChatMessageHistory
 from langchain.memory.utils import get_prompt_input_key
+from langchain.pydantic_v1 import Field
 from langchain.schema import BaseChatMessageHistory, BaseMemory
 
 
@@ -24,9 +23,13 @@ class BaseChatMemory(BaseMemory, ABC):
         else:
             prompt_input_key = self.input_key
         if self.output_key is None:
-            if len(outputs) != 1:
-                raise ValueError(f"One output key expected, got {outputs.keys()}")
-            output_key = list(outputs.keys())[0]
+            if len(outputs) == 1:
+                output_key = list(outputs.keys())[0]
+            else:
+                if "answer" in outputs.keys():
+                    output_key = "answer"
+                else:
+                    raise ValueError(f"One output key expected, got {outputs.keys()}")
         else:
             output_key = self.output_key
         return inputs[prompt_input_key], outputs[output_key]
