@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='langchain',
-    version='0.325',
+    version='0.3250',
     packages=find_packages(),
     install_requires=[
         # List your dependencies here
