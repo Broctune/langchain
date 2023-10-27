@@ -1,3 +1,15 @@
+# YPrime Install
+
+I downloaded my froked version of langchain to ~/GitHub/langchain
+
+I installed poetry and all the dependancies per the instructions referenced below under "Contributing"
+
+I had to create the /libs/langchain/setup.py file to enable and editable, local dependancy reference using:
+
+(This is from the system that needs to use this forked langchain):
+
+pip install -e ~/GitHub/langchain/libs/langchain
+
 # 🦜️🔗 LangChain
 
 ⚡ Building applications with LLMs through composability ⚡
