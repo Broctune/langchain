@@ -12,8 +12,6 @@ from langchain.pydantic_v1 import BaseModel, Extra, root_validator
 from langchain.schema.embeddings import Embeddings
 from langchain.utils import get_from_dict_or_env
 
-__all__ = ["GradientEmbeddings"]
-
 
 class GradientEmbeddings(BaseModel, Embeddings):
     """Gradient.ai Embedding models.
@@ -50,7 +48,7 @@ class GradientEmbeddings(BaseModel, Embeddings):
     gradient_api_url: str = "https://api.gradient.ai/api"
     """Endpoint URL to use."""
 
-    client: Any = None  #: :meta private:
+    client: Any  #: :meta private:
     """Gradient client."""
 
     # LLM call kwargs
@@ -145,9 +143,8 @@ class GradientEmbeddings(BaseModel, Embeddings):
         return embeddings[0]
 
 
-class TinyAsyncGradientEmbeddingClient:  #: :meta private:
-    """A helper tool to embed Gradient. Not part of Langchain's or Gradients stable API,
-    direct use discouraged.
+class TinyAsyncGradientEmbeddingClient:
+    """A helper tool to embed Gradient. Not part of Langchain's or Gradients stable API.
 
     To use, set the environment variable ``GRADIENT_ACCESS_TOKEN`` with your
     API token and ``GRADIENT_WORKSPACE_ID`` for your gradient workspace,

@@ -28,26 +28,24 @@ class ModerationToxicityConfig(BaseModel):
     """List of toxic labels, defaults to `list[]`"""
 
 
-class ModerationPromptSafetyConfig(BaseModel):
+class ModerationIntentConfig(BaseModel):
     threshold: float = 0.5
     """
-    Threshold for Prompt Safety classification
+    Threshold for Intent classification
     confidence score, defaults to 0.5 i.e. 50%
     """
 
 
 class BaseModerationConfig(BaseModel):
     filters: List[
-        Union[
-            ModerationPiiConfig, ModerationToxicityConfig, ModerationPromptSafetyConfig
-        ]
+        Union[ModerationPiiConfig, ModerationToxicityConfig, ModerationIntentConfig]
     ] = [
         ModerationPiiConfig(),
         ModerationToxicityConfig(),
-        ModerationPromptSafetyConfig(),
+        ModerationIntentConfig(),
     ]
     """
     Filters applied to the moderation chain, defaults to
     `[ModerationPiiConfig(), ModerationToxicityConfig(),
-    ModerationPromptSafetyConfig()]`
+    ModerationIntentConfig()]`
     """

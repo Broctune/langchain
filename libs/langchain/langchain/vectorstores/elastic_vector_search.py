@@ -156,21 +156,11 @@ class ElasticVectorSearch(VectorStore):
         self.index_name = index_name
         _ssl_verify = ssl_verify or {}
         try:
-            self.client = elasticsearch.Elasticsearch(
-                elasticsearch_url,
-                **_ssl_verify,
-                headers={"user-agent": self.get_user_agent()},
-            )
+            self.client = elasticsearch.Elasticsearch(elasticsearch_url, **_ssl_verify)
         except ValueError as e:
             raise ValueError(
                 f"Your elasticsearch client string is mis-formatted. Got error: {e} "
             )
-
-    @staticmethod
-    def get_user_agent() -> str:
-        from langchain import __version__
-
-        return f"langchain-py-dvs/{__version__}"
 
     @property
     def embeddings(self) -> Embeddings:

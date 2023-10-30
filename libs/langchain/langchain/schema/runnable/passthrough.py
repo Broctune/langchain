@@ -2,12 +2,10 @@
 from __future__ import annotations
 
 import asyncio
-import inspect
 import threading
 from typing import (
     Any,
     AsyncIterator,
-    Awaitable,
     Callable,
     Dict,
     Iterator,
@@ -22,33 +20,28 @@ from typing import (
 
 from langchain.pydantic_v1 import BaseModel, create_model
 from langchain.schema.runnable.base import (
-    Other,
+    Input,
     Runnable,
     RunnableParallel,
     RunnableSerializable,
 )
-from langchain.schema.runnable.config import (
-    RunnableConfig,
-    acall_func_with_variable_args,
-    call_func_with_variable_args,
-    get_executor_for_config,
-)
+from langchain.schema.runnable.config import RunnableConfig, get_executor_for_config
 from langchain.schema.runnable.utils import AddableDict, ConfigurableFieldSpec
 from langchain.utils.aiter import atee, py_anext
 from langchain.utils.iter import safetee
 
 
-def identity(x: Other) -> Other:
+def identity(x: Input) -> Input:
     """An identity function"""
     return x
 
 
-async def aidentity(x: Other) -> Other:
+async def aidentity(x: Input) -> Input:
     """An async identity function"""
     return x
 
 
-class RunnablePassthrough(RunnableSerializable[Other, Other]):
+class RunnablePassthrough(RunnableSerializable[Input, Input]):
     """A runnable to passthrough inputs unchanged or with additional keys.
 
     This runnable behaves almost like the identity function, except that it
@@ -105,45 +98,7 @@ class RunnablePassthrough(RunnableSerializable[Other, Other]):
             # {'llm1': 'completion', 'llm2': 'completion', 'total_chars': 20}
     """
 
-    input_type: Optional[Type[Other]] = None
-
-    func: Optional[
-        Union[Callable[[Other], None], Callable[[Other, RunnableConfig], None]]
-    ] = None
-
-    afunc: Optional[
-        Union[
-            Callable[[Other], Awaitable[None]],
-            Callable[[Other, RunnableConfig], Awaitable[None]],
-        ]
-    ] = None
-
-    def __init__(
-        self,
-        func: Optional[
-            Union[
-                Union[Callable[[Other], None], Callable[[Other, RunnableConfig], None]],
-                Union[
-                    Callable[[Other], Awaitable[None]],
-                    Callable[[Other, RunnableConfig], Awaitable[None]],
-                ],
-            ]
-        ] = None,
-        afunc: Optional[
-            Union[
-                Callable[[Other], Awaitable[None]],
-                Callable[[Other, RunnableConfig], Awaitable[None]],
-            ]
-        ] = None,
-        *,
-        input_type: Optional[Type[Other]] = None,
-        **kwargs: Any,
-    ) -> None:
-        if inspect.iscoroutinefunction(func):
-            afunc = func
-            func = None
-
-        super().__init__(func=func, afunc=afunc, input_type=input_type, **kwargs)
+    input_type: Optional[Type[Input]] = None
 
     @classmethod
     def is_lc_serializable(cls) -> bool:
@@ -184,99 +139,32 @@ class RunnablePassthrough(RunnableSerializable[Other, Other]):
         """
         return RunnableAssign(RunnableParallel(kwargs))
 
-    def invoke(
-        self, input: Other, config: Optional[RunnableConfig] = None, **kwargs: Any
-    ) -> Other:
-        if self.func is not None:
-            call_func_with_variable_args(self.func, input, config or {}, **kwargs)
+    def invoke(self, input: Input, config: Optional[RunnableConfig] = None) -> Input:
         return self._call_with_config(identity, input, config)
 
     async def ainvoke(
         self,
-        input: Other,
+        input: Input,
         config: Optional[RunnableConfig] = None,
         **kwargs: Optional[Any],
-    ) -> Other:
-        if self.afunc is not None:
-            await acall_func_with_variable_args(
-                self.afunc, input, config or {}, **kwargs
-            )
-        elif self.func is not None:
-            call_func_with_variable_args(self.func, input, config or {}, **kwargs)
+    ) -> Input:
         return await self._acall_with_config(aidentity, input, config)
 
     def transform(
         self,
-        input: Iterator[Other],
+        input: Iterator[Input],
         config: Optional[RunnableConfig] = None,
         **kwargs: Any,
-    ) -> Iterator[Other]:
-        if self.func is None:
-            for chunk in self._transform_stream_with_config(input, identity, config):
-                yield chunk
-        else:
-            final = None
-
-            for chunk in self._transform_stream_with_config(input, identity, config):
-                yield chunk
-                if final is None:
-                    final = chunk
-                else:
-                    final = final + chunk
-
-            if final is not None:
-                call_func_with_variable_args(self.func, final, config or {}, **kwargs)
+    ) -> Iterator[Input]:
+        return self._transform_stream_with_config(input, identity, config)
 
     async def atransform(
         self,
-        input: AsyncIterator[Other],
+        input: AsyncIterator[Input],
         config: Optional[RunnableConfig] = None,
         **kwargs: Any,
-    ) -> AsyncIterator[Other]:
-        if self.afunc is None and self.func is None:
-            async for chunk in self._atransform_stream_with_config(
-                input, identity, config
-            ):
-                yield chunk
-        else:
-            final = None
-
-            async for chunk in self._atransform_stream_with_config(
-                input, identity, config
-            ):
-                yield chunk
-                if final is None:
-                    final = chunk
-                else:
-                    final = final + chunk
-
-            if final is not None:
-                config = config or {}
-                if self.afunc is not None:
-                    await acall_func_with_variable_args(
-                        self.afunc, final, config, **kwargs
-                    )
-                elif self.func is not None:
-                    call_func_with_variable_args(self.func, final, config, **kwargs)
-
-    def stream(
-        self,
-        input: Other,
-        config: Optional[RunnableConfig] = None,
-        **kwargs: Any,
-    ) -> Iterator[Other]:
-        return self.transform(iter([input]), config, **kwargs)
-
-    async def astream(
-        self,
-        input: Other,
-        config: Optional[RunnableConfig] = None,
-        **kwargs: Any,
-    ) -> AsyncIterator[Other]:
-        async def input_aiter() -> AsyncIterator[Other]:
-            yield input
-
-        async for chunk in self.atransform(input_aiter(), config, **kwargs):
+    ) -> AsyncIterator[Input]:
+        async for chunk in self._atransform_stream_with_config(input, identity, config):
             yield chunk
 
 
@@ -298,21 +186,19 @@ class RunnableAssign(RunnableSerializable[Dict[str, Any], Dict[str, Any]]):
     def get_lc_namespace(cls) -> List[str]:
         return cls.__module__.split(".")[:-1]
 
-    def get_input_schema(
-        self, config: Optional[RunnableConfig] = None
-    ) -> Type[BaseModel]:
-        map_input_schema = self.mapper.get_input_schema(config)
+    @property
+    def input_schema(self) -> Type[BaseModel]:
+        map_input_schema = self.mapper.input_schema
         if not map_input_schema.__custom_root_type__:
             # ie. it's a dict
             return map_input_schema
 
-        return super().get_input_schema(config)
+        return super().input_schema
 
-    def get_output_schema(
-        self, config: Optional[RunnableConfig] = None
-    ) -> Type[BaseModel]:
-        map_input_schema = self.mapper.get_input_schema(config)
-        map_output_schema = self.mapper.get_output_schema(config)
+    @property
+    def output_schema(self) -> Type[BaseModel]:
+        map_input_schema = self.mapper.input_schema
+        map_output_schema = self.mapper.output_schema
         if (
             not map_input_schema.__custom_root_type__
             and not map_output_schema.__custom_root_type__
@@ -327,7 +213,7 @@ class RunnableAssign(RunnableSerializable[Dict[str, Any], Dict[str, Any]]):
                 },
             )
 
-        return super().get_output_schema(config)
+        return super().output_schema
 
     @property
     def config_specs(self) -> Sequence[ConfigurableFieldSpec]:

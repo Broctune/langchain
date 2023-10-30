@@ -37,6 +37,7 @@ from tenacity import (
     wait_exponential,
 )
 
+import langchain
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.callbacks.manager import (
     AsyncCallbackManager,
@@ -45,12 +46,16 @@ from langchain.callbacks.manager import (
     CallbackManagerForLLMRun,
     Callbacks,
 )
-from langchain.globals import get_llm_cache
 from langchain.load.dump import dumpd
 from langchain.prompts.base import StringPromptValue
 from langchain.prompts.chat import ChatPromptValue
 from langchain.pydantic_v1 import Field, root_validator, validator
-from langchain.schema import Generation, LLMResult, PromptValue, RunInfo
+from langchain.schema import (
+    Generation,
+    LLMResult,
+    PromptValue,
+    RunInfo,
+)
 from langchain.schema.language_model import BaseLanguageModel, LanguageModelInput
 from langchain.schema.messages import AIMessage, BaseMessage, get_buffer_string
 from langchain.schema.output import GenerationChunk
@@ -61,9 +66,7 @@ logger = logging.getLogger(__name__)
 
 
 def _get_verbosity() -> bool:
-    from langchain.globals import get_verbose
-
-    return get_verbose()
+    return langchain.verbose
 
 
 @functools.lru_cache
@@ -124,10 +127,9 @@ def get_prompts(
     missing_prompts = []
     missing_prompt_idxs = []
     existing_prompts = {}
-    llm_cache = get_llm_cache()
     for i, prompt in enumerate(prompts):
-        if llm_cache is not None:
-            cache_val = llm_cache.lookup(prompt, llm_string)
+        if langchain.llm_cache is not None:
+            cache_val = langchain.llm_cache.lookup(prompt, llm_string)
             if isinstance(cache_val, list):
                 existing_prompts[i] = cache_val
             else:
@@ -144,12 +146,11 @@ def update_cache(
     prompts: List[str],
 ) -> Optional[dict]:
     """Update the cache and get the LLM output."""
-    llm_cache = get_llm_cache()
     for i, result in enumerate(new_results.generations):
         existing_prompts[missing_prompt_idxs[i]] = result
         prompt = prompts[missing_prompt_idxs[i]]
-        if llm_cache is not None:
-            llm_cache.update(prompt, llm_string, result)
+        if langchain.llm_cache is not None:
+            langchain.llm_cache.update(prompt, llm_string, result)
     llm_output = new_results.llm_output
     return llm_output
 
@@ -294,7 +295,6 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                 inputs[i : i + max_concurrency]
                 for i in range(0, len(inputs), max_concurrency)
             ]
-            config = [{**c, "max_concurrency": None} for c in config]  # type: ignore[misc]
             return [
                 output
                 for batch in batches
@@ -337,13 +337,10 @@ class BaseLLM(BaseLanguageModel[str], ABC):
                 inputs[i : i + max_concurrency]
                 for i in range(0, len(inputs), max_concurrency)
             ]
-            config = [{**c, "max_concurrency": None} for c in config]  # type: ignore[misc]
             return [
                 output
                 for batch in batches
-                for output in await self.abatch(
-                    batch, config=config, return_exceptions=return_exceptions, **kwargs
-                )
+                for output in await self.abatch(batch, config=config, **kwargs)
             ]
 
     def stream(
@@ -630,7 +627,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         new_arg_supported = inspect.signature(self._generate).parameters.get(
             "run_manager"
         )
-        if get_llm_cache() is None or disregard_cache:
+        if langchain.llm_cache is None or disregard_cache:
             if self.cache is not None and self.cache:
                 raise ValueError(
                     "Asked to cache, but no cache found at `langchain.cache`."
@@ -794,7 +791,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         new_arg_supported = inspect.signature(self._agenerate).parameters.get(
             "run_manager"
         )
-        if get_llm_cache() is None or disregard_cache:
+        if langchain.llm_cache is None or disregard_cache:
             if self.cache is not None and self.cache:
                 raise ValueError(
                     "Asked to cache, but no cache found at `langchain.cache`."

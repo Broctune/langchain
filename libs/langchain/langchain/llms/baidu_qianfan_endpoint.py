@@ -96,7 +96,7 @@ class QianfanLLMEndpoint(LLM):
 
             values["client"] = qianfan.Completion(**params)
         except ImportError:
-            raise ImportError(
+            raise ValueError(
                 "qianfan package not found, please install it with "
                 "`pip install qianfan`"
             )
@@ -116,10 +116,8 @@ class QianfanLLMEndpoint(LLM):
 
     @property
     def _default_params(self) -> Dict[str, Any]:
-        """Get the default parameters for calling Qianfan API."""
+        """Get the default parameters for calling OpenAI API."""
         normal_params = {
-            "model": self.model,
-            "endpoint": self.endpoint,
             "stream": self.streaming,
             "request_timeout": self.request_timeout,
             "top_p": self.top_p,

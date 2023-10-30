@@ -13,19 +13,7 @@ from langchain.utilities.requests import Requests
 
 
 class NLAToolkit(BaseToolkit):
-    """Natural Language API Toolkit.
-
-    *Security Note*: This toolkit creates tools that enable making calls
-        to an Open API compliant API.
-
-        The tools created by this toolkit may be able to make GET, POST,
-        PATCH, PUT, DELETE requests to any of the exposed endpoints on
-        the API.
-
-        Control access to who can use this toolkit.
-
-        See https://python.langchain.com/docs/security for more information.
-    """
+    """Natural Language API Toolkit."""
 
     nla_tools: Sequence[NLATool] = Field(...)
     """List of API Endpoint Tools."""

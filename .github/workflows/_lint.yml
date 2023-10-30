@@ -7,10 +7,6 @@ on:
         required: true
         type: string
         description: "From which folder this pipeline executes"
-      langchain-location:
-        required: false
-        type: string
-        description: "Relative path to the langchain library folder"
 
 env:
   POETRY_VERSION: "1.6.1"
@@ -38,7 +34,7 @@ jobs:
           - "3.8"
           - "3.11"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           # Fetch the last FETCH_DEPTH commits, so the mtime-changing script
           # can accurately set the mtimes of files modified in the last FETCH_DEPTH commits.
@@ -121,10 +117,8 @@ jobs:
       - name: Install langchain editable
         working-directory: ${{ inputs.working-directory }}
         if: ${{ inputs.working-directory != 'libs/langchain' }}
-        env:
-          LANGCHAIN_LOCATION: ${{ inputs.langchain-location || '../langchain'}}
         run: |
-          pip install -e "$LANGCHAIN_LOCATION"
+          pip install -e ../langchain
 
       - name: Restore black cache
         uses: actions/cache@v3

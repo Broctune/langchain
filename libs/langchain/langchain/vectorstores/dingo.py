@@ -36,7 +36,6 @@ class Dingo(VectorStore):
         *,
         client: Any = None,
         index_name: Optional[str] = None,
-        dimension: int = 1024,
         host: Optional[List[str]] = None,
         user: str = "root",
         password: str = "123123",
@@ -68,11 +67,9 @@ class Dingo(VectorStore):
 
         if index_name is not None and index_name not in dingo_client.get_index():
             if self_id is True:
-                dingo_client.create_index(
-                    index_name, dimension=dimension, auto_id=False
-                )
+                dingo_client.create_index(index_name, 1024, auto_id=False)
             else:
-                dingo_client.create_index(index_name, dimension=dimension)
+                dingo_client.create_index(index_name, 1024)
 
         self._index_name = index_name
         self._embedding = embedding
@@ -271,7 +268,6 @@ class Dingo(VectorStore):
         ids: Optional[List[str]] = None,
         text_key: str = "text",
         index_name: Optional[str] = None,
-        dimension: int = 1024,
         client: Any = None,
         host: List[str] = ["172.20.31.10:13000"],
         user: str = "root",
@@ -319,12 +315,11 @@ class Dingo(VectorStore):
                 raise ValueError(f"Dingo failed to connect: {e}")
         if kwargs is not None and kwargs.get("self_id") is True:
             if index_name not in dingo_client.get_index():
-                dingo_client.create_index(
-                    index_name, dimension=dimension, auto_id=False
-                )
+                dingo_client.create_index(index_name, 1024, auto_id=False)
         else:
             if index_name not in dingo_client.get_index():
-                dingo_client.create_index(index_name, dimension=dimension)
+                dingo_client.create_index(index_name, 1024)
+            # dingo_client.create_index(index_name, 1024, index_type="hnsw")
 
         # Embed and create the documents
 

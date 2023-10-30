@@ -18,9 +18,8 @@
 
 Looking for the JS/TS version? Check out [LangChain.js](https://github.com/langchain-ai/langchainjs).
 
-To help you ship LangChain apps to production faster, check out [LangSmith](https://smith.langchain.com). 
-[LangSmith](https://smith.langchain.com) is a unified developer platform for building, testing, and monitoring LLM applications. 
-Fill out [this form](https://airtable.com/appwQzlErAS2qiP0L/shrGtGaVBVAz7NcV2) to get off the waitlist or speak with our sales team
+**Production Support:** As you move your LangChains into production, we'd love to offer more hands-on support.
+Fill out [this form](https://airtable.com/appwQzlErAS2qiP0L/shrGtGaVBVAz7NcV2) to share more about what you're building, and our team will get in touch.
 
 ## Quick Install
 

@@ -26,7 +26,7 @@ class ModerationToxicityError(Exception):
         super().__init__(self.message)
 
 
-class ModerationPromptSafetyError(Exception):
+class ModerationIntentionError(Exception):
     """Exception raised if Intention entities are detected.
 
     Attributes:
@@ -35,7 +35,9 @@ class ModerationPromptSafetyError(Exception):
 
     def __init__(
         self,
-        message: str = ("The prompt is unsafe and cannot be processed"),
+        message: str = (
+            "The prompt indicates an un-desired intent and " "cannot be processed"
+        ),
     ):
         self.message = message
         super().__init__(self.message)

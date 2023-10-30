@@ -8,8 +8,6 @@ from langchain.schema.retriever import BaseRetriever
 
 
 class SearchDepth(Enum):
-    """Search depth as enumerator."""
-
     BASIC = "basic"
     ADVANCED = "advanced"
 
@@ -33,7 +31,7 @@ class TavilySearchAPIRetriever(BaseRetriever):
         try:
             from tavily import Client
         except ImportError:
-            raise ImportError(
+            raise ValueError(
                 "Tavily python package not found. "
                 "Please install it with `pip install tavily-python`."
             )

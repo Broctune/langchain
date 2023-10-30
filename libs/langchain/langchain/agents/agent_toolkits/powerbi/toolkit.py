@@ -28,17 +28,7 @@ from langchain.utilities.powerbi import PowerBIDataset
 
 
 class PowerBIToolkit(BaseToolkit):
-    """Toolkit for interacting with Power BI dataset.
-
-    *Security Note*: This toolkit interacts with an external service.
-
-        Control access to who can use this toolkit.
-
-        Make sure that the capabilities given by this toolkit to the calling
-        code are appropriately scoped to the application.
-
-        See https://python.langchain.com/docs/security for more information.
-    """
+    """Toolkit for interacting with Power BI dataset."""
 
     powerbi: PowerBIDataset = Field(exclude=True)
     llm: Union[BaseLanguageModel, BaseChatModel] = Field(exclude=True)

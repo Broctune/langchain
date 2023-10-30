@@ -5,7 +5,6 @@ from typing import Callable, List, Optional
 from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
 from langchain.document_loaders.unstructured import UnstructuredFileLoader
-from langchain.utilities.vertexai import get_client_info
 
 
 class GCSFileLoader(BaseLoader):
@@ -58,15 +57,11 @@ class GCSFileLoader(BaseLoader):
             )
 
         # Initialise a client
-        storage_client = storage.Client(
-            self.project_name, client_info=get_client_info("google-cloud-storage")
-        )
+        storage_client = storage.Client(self.project_name)
         # Create a bucket object for our bucket
         bucket = storage_client.get_bucket(self.bucket)
         # Create a blob object from the filepath
         blob = bucket.blob(self.blob)
-        # retrieve custom metadata associated with the blob
-        metadata = bucket.get_blob(self.blob).metadata
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = f"{temp_dir}/{self.blob}"
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -77,6 +72,4 @@ class GCSFileLoader(BaseLoader):
             for doc in docs:
                 if "source" in doc.metadata:
                     doc.metadata["source"] = f"gs://{self.bucket}/{self.blob}"
-                if metadata:
-                    doc.metadata.update(metadata)
             return docs

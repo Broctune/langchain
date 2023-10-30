@@ -274,10 +274,7 @@ class BaseMultiActionAgent(BaseModel):
     def dict(self, **kwargs: Any) -> Dict:
         """Return dictionary representation of agent."""
         _dict = super().dict()
-        try:
-            _dict["_type"] = str(self._agent_type)
-        except NotImplementedError:
-            pass
+        _dict["_type"] = str(self._agent_type)
         return _dict
 
     def save(self, file_path: Union[Path, str]) -> None:
@@ -298,13 +295,11 @@ class BaseMultiActionAgent(BaseModel):
         else:
             save_path = file_path
 
-        # Fetch dictionary to save
-        agent_dict = self.dict()
-        if "_type" not in agent_dict:
-            raise NotImplementedError(f"Agent {self} does not support saving.")
-
         directory_path = save_path.parent
         directory_path.mkdir(parents=True, exist_ok=True)
+
+        # Fetch dictionary to save
+        agent_dict = self.dict()
 
         if save_path.suffix == ".json":
             with open(file_path, "w") as f:

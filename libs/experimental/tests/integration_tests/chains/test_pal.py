@@ -1,8 +1,7 @@
 """Test PAL chain."""
 
+from langchain.chains.pal.base import PALChain
 from langchain.llms import OpenAI
-
-from langchain_experimental.pal_chain.base import PALChain
 
 
 def test_math_prompt() -> None:

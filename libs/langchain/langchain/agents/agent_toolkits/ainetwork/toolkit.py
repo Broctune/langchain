@@ -17,14 +17,7 @@ if TYPE_CHECKING:
 
 
 class AINetworkToolkit(BaseToolkit):
-    """Toolkit for interacting with AINetwork Blockchain.
-
-    *Security Note*: This toolkit contains tools that can read and modify
-        the state of a service; e.g., by reading, creating, updating, deleting
-        data associated with this service.
-
-        See https://python.langchain.com/docs/security for more information.
-    """
+    """Toolkit for interacting with AINetwork Blockchain."""
 
     network: Optional[Literal["mainnet", "testnet"]] = "testnet"
     interface: Optional[Ain] = None

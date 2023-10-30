@@ -88,8 +88,8 @@ class MyScaleTranslator(Visitor):
         return self.map_dict[func](*args)
 
     def visit_comparison(self, comparison: Comparison) -> Dict:
-        regex = r"\((.*?)\)"
-        matched = re.search(r"\(\w+\)", comparison.attribute)
+        regex = "\((.*?)\)"
+        matched = re.search("\(\w+\)", comparison.attribute)
 
         # If arbitrary function is applied to an attribute
         if matched:

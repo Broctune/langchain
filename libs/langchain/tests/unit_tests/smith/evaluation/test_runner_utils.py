@@ -331,17 +331,14 @@ async def test_arun_on_dataset(monkeypatch: pytest.MonkeyPatch) -> None:
             project_name="test_project",
             client=client,
         )
+
         expected = {
             str(example.id): {
                 "output": {
                     "result": f"Result for example {uuid.UUID(str(example.id))}"
                 },
                 "input": {"input": example.inputs["input"]},
-                "reference": {
-                    "output": example.outputs["output"]
-                    if example.outputs is not None
-                    else None
-                },
+                "reference": {"output": example.outputs["output"]},
                 "feedback": [],
             }
             for example in examples

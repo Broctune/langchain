@@ -209,8 +209,6 @@ class Weaviate(VectorStore):
         query_obj = self._client.query.get(self._index_name, self._query_attrs)
         if kwargs.get("where_filter"):
             query_obj = query_obj.with_where(kwargs.get("where_filter"))
-        if kwargs.get("tenant"):
-            query_obj = query_obj.with_tenant(kwargs.get("tenant"))
         if kwargs.get("additional"):
             query_obj = query_obj.with_additional(kwargs.get("additional"))
         result = query_obj.with_near_text(content).with_limit(k).do()
@@ -230,8 +228,6 @@ class Weaviate(VectorStore):
         query_obj = self._client.query.get(self._index_name, self._query_attrs)
         if kwargs.get("where_filter"):
             query_obj = query_obj.with_where(kwargs.get("where_filter"))
-        if kwargs.get("tenant"):
-            query_obj = query_obj.with_tenant(kwargs.get("tenant"))
         if kwargs.get("additional"):
             query_obj = query_obj.with_additional(kwargs.get("additional"))
         result = query_obj.with_near_vector(vector).with_limit(k).do()
@@ -308,8 +304,6 @@ class Weaviate(VectorStore):
         query_obj = self._client.query.get(self._index_name, self._query_attrs)
         if kwargs.get("where_filter"):
             query_obj = query_obj.with_where(kwargs.get("where_filter"))
-        if kwargs.get("tenant"):
-            query_obj = query_obj.with_tenant(kwargs.get("tenant"))
         results = (
             query_obj.with_additional("vector")
             .with_near_vector(vector)
@@ -349,8 +343,6 @@ class Weaviate(VectorStore):
         query_obj = self._client.query.get(self._index_name, self._query_attrs)
         if kwargs.get("where_filter"):
             query_obj = query_obj.with_where(kwargs.get("where_filter"))
-        if kwargs.get("tenant"):
-            query_obj = query_obj.with_tenant(kwargs.get("tenant"))
 
         embedded_query = self._embedding.embed_query(query)
         if not self._by_text:

@@ -642,16 +642,10 @@ class HTMLHeaderTextSplitter:
 # @dataclass(frozen=True, kw_only=True, slots=True)
 @dataclass(frozen=True)
 class Tokenizer:
-    """Tokenizer data class."""
-
     chunk_overlap: int
-    """Overlap in tokens between chunks"""
     tokens_per_chunk: int
-    """Maximum number of tokens per chunk"""
     decode: Callable[[list[int]], str]
-    """ Function to decode a list of token ids to a string"""
     encode: Callable[[str], List[int]]
-    """ Function to encode a string to a list of token ids"""
 
 
 def split_text_on_tokens(*, text: str, tokenizer: Tokenizer) -> List[str]:
@@ -811,7 +805,6 @@ class Language(str, Enum):
     HTML = "html"
     SOL = "sol"
     CSHARP = "csharp"
-    COBOL = "cobol"
 
 
 class RecursiveCharacterTextSplitter(TextSplitter):
@@ -1302,38 +1295,6 @@ class RecursiveCharacterTextSplitter(TextSplitter):
                 "\nassembly ",
                 # Split by the normal type of lines
                 "\n\n",
-                "\n",
-                " ",
-                "",
-            ]
-        elif language == Language.COBOL:
-            return [
-                # Split along divisions
-                "\nIDENTIFICATION DIVISION.",
-                "\nENVIRONMENT DIVISION.",
-                "\nDATA DIVISION.",
-                "\nPROCEDURE DIVISION.",
-                # Split along sections within DATA DIVISION
-                "\nWORKING-STORAGE SECTION.",
-                "\nLINKAGE SECTION.",
-                "\nFILE SECTION.",
-                # Split along sections within PROCEDURE DIVISION
-                "\nINPUT-OUTPUT SECTION.",
-                # Split along paragraphs and common statements
-                "\nOPEN ",
-                "\nCLOSE ",
-                "\nREAD ",
-                "\nWRITE ",
-                "\nIF ",
-                "\nELSE ",
-                "\nMOVE ",
-                "\nPERFORM ",
-                "\nUNTIL ",
-                "\nVARYING ",
-                "\nACCEPT ",
-                "\nDISPLAY ",
-                "\nSTOP RUN.",
-                # Split by the normal type of lines
                 "\n",
                 " ",
                 "",

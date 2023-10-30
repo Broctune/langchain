@@ -92,7 +92,7 @@ def get_repl_context() -> Any:
 
         return get_context()
     except ImportError:
-        raise ImportError(
+        raise ValueError(
             "Cannot access dbruntime, not running inside a Databricks notebook."
         )
 

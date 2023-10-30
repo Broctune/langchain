@@ -1,40 +1,34 @@
 """Test ChatFireworks wrapper."""
-import sys
 
 import pytest
 
 from langchain.chat_models.fireworks import ChatFireworks
-from langchain.schema import ChatGeneration, ChatResult, LLMResult
+from langchain.schema import (
+    ChatGeneration,
+    ChatResult,
+    LLMResult,
+)
 from langchain.schema.messages import BaseMessage, HumanMessage, SystemMessage
 
-if sys.version_info < (3, 9):
-    pytest.skip("fireworks-ai requires Python > 3.8", allow_module_level=True)
 
-
-@pytest.fixture
-def chat() -> ChatFireworks:
-    return ChatFireworks(model_kwargs={"temperature": 0, "max_tokens": 512})
-
-
-@pytest.mark.scheduled
-def test_chat_fireworks(chat: ChatFireworks) -> None:
+def test_chat_fireworks() -> None:
     """Test ChatFireworks wrapper."""
+    chat = ChatFireworks()
     message = HumanMessage(content="What is the weather in Redwood City, CA today")
     response = chat([message])
     assert isinstance(response, BaseMessage)
     assert isinstance(response.content, str)
 
 
-@pytest.mark.scheduled
 def test_chat_fireworks_model() -> None:
     """Test ChatFireworks wrapper handles model_name."""
     chat = ChatFireworks(model="foo")
     assert chat.model == "foo"
 
 
-@pytest.mark.scheduled
-def test_chat_fireworks_system_message(chat: ChatFireworks) -> None:
+def test_chat_fireworks_system_message() -> None:
     """Test ChatFireworks wrapper with system message."""
+    chat = ChatFireworks()
     system_message = SystemMessage(content="You are to chat with the user.")
     human_message = HumanMessage(content="Hello")
     response = chat([system_message, human_message])
@@ -42,7 +36,6 @@ def test_chat_fireworks_system_message(chat: ChatFireworks) -> None:
     assert isinstance(response.content, str)
 
 
-@pytest.mark.scheduled
 def test_chat_fireworks_generate() -> None:
     """Test ChatFireworks wrapper with generate."""
     chat = ChatFireworks(model_kwargs={"n": 2})
@@ -58,7 +51,6 @@ def test_chat_fireworks_generate() -> None:
             assert generation.text == generation.message.content
 
 
-@pytest.mark.scheduled
 def test_chat_fireworks_multiple_completions() -> None:
     """Test ChatFireworks wrapper with multiple completions."""
     chat = ChatFireworks(model_kwargs={"n": 5})
@@ -71,93 +63,23 @@ def test_chat_fireworks_multiple_completions() -> None:
         assert isinstance(generation.message.content, str)
 
 
-@pytest.mark.scheduled
-def test_chat_fireworks_llm_output_contains_model_id(chat: ChatFireworks) -> None:
+def test_chat_fireworks_llm_output_contains_model_id() -> None:
     """Test llm_output contains model_id."""
+    chat = ChatFireworks()
     message = HumanMessage(content="Hello")
     llm_result = chat.generate([[message]])
     assert llm_result.llm_output is not None
     assert llm_result.llm_output["model"] == chat.model
 
 
-@pytest.mark.scheduled
-def test_fireworks_invoke(chat: ChatFireworks) -> None:
-    """Tests chat completion with invoke"""
-    result = chat.invoke("How is the weather in New York today?", stop=[","])
-    assert isinstance(result.content, str)
-    assert result.content[-1] == ","
-
-
-@pytest.mark.scheduled
-@pytest.mark.asyncio
-async def test_fireworks_ainvoke(chat: ChatFireworks) -> None:
-    """Tests chat completion with invoke"""
-    result = await chat.ainvoke("How is the weather in New York today?", stop=[","])
-    assert isinstance(result.content, str)
-    assert result.content[-1] == ","
-
-
-@pytest.mark.scheduled
-def test_fireworks_batch(chat: ChatFireworks) -> None:
-    """Test batch tokens from ChatFireworks."""
-    result = chat.batch(
-        [
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-        ],
-        config={"max_concurrency": 5},
-        stop=[","],
-    )
-    for token in result:
-        assert isinstance(token.content, str)
-        assert token.content[-1] == ","
-
-
-@pytest.mark.scheduled
-@pytest.mark.asyncio
-async def test_fireworks_abatch(chat: ChatFireworks) -> None:
-    """Test batch tokens from ChatFireworks."""
-    result = await chat.abatch(
-        [
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-            "What is the weather in Redwood City, CA today",
-        ],
-        config={"max_concurrency": 5},
-        stop=[","],
-    )
-    for token in result:
-        assert isinstance(token.content, str)
-        assert token.content[-1] == ","
-
-
-@pytest.mark.scheduled
-def test_fireworks_streaming(chat: ChatFireworks) -> None:
+def test_fireworks_streaming() -> None:
     """Test streaming tokens from Fireworks."""
+    llm = ChatFireworks()
 
-    for token in chat.stream("I'm Pickle Rick"):
+    for token in llm.stream("I'm Pickle Rick"):
         assert isinstance(token.content, str)
 
 
-@pytest.mark.scheduled
-def test_fireworks_streaming_stop_words(chat: ChatFireworks) -> None:
-    """Test streaming tokens with stop words."""
-
-    last_token = ""
-    for token in chat.stream("I'm Pickle Rick", stop=[","]):
-        last_token = token.content
-        assert isinstance(token.content, str)
-    assert last_token[-1] == ","
-
-
-@pytest.mark.scheduled
 @pytest.mark.asyncio
 async def test_chat_fireworks_agenerate() -> None:
     """Test ChatFireworks wrapper with generate."""
@@ -174,15 +96,10 @@ async def test_chat_fireworks_agenerate() -> None:
             assert generation.text == generation.message.content
 
 
-@pytest.mark.scheduled
 @pytest.mark.asyncio
-async def test_fireworks_astream(chat: ChatFireworks) -> None:
+async def test_fireworks_astream() -> None:
     """Test streaming tokens from Fireworks."""
+    llm = ChatFireworks()
 
-    last_token = ""
-    async for token in chat.astream(
-        "Who's the best quarterback in the NFL?", stop=[","]
-    ):
-        last_token = token.content
+    async for token in llm.astream("Who's the best quarterback in the NFL?"):
         assert isinstance(token.content, str)
-    assert last_token[-1] == ","

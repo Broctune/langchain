@@ -14,18 +14,8 @@ from langchain.schema.language_model import BaseLanguageModel
 
 
 class KuzuQAChain(Chain):
-    """Question-answering against a graph by generating Cypher statements for Kùzu.
-
-    *Security note*: Make sure that the database connection uses credentials
-        that are narrowly-scoped to only include necessary permissions.
-        Failure to do so may result in data corruption or loss, since the calling
-        code may attempt commands that would result in deletion, mutation
-        of data if appropriately prompted or reading sensitive data if such
-        data is present in the database.
-        The best way to guard against such negative outcomes is to (as appropriate)
-        limit the permissions granted to the credentials used with this tool.
-
-        See https://python.langchain.com/docs/security for more information.
+    """Chain for question-answering against a graph by generating Cypher statements for
+    Kùzu.
     """
 
     graph: KuzuGraph = Field(exclude=True)

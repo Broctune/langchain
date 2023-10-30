@@ -45,9 +45,8 @@ class BasePromptTemplate(RunnableSerializable[Dict, PromptValue], ABC):
 
         return Union[StringPromptValue, ChatPromptValueConcrete]
 
-    def get_input_schema(
-        self, config: Optional[RunnableConfig] = None
-    ) -> Type[BaseModel]:
+    @property
+    def input_schema(self) -> Type[BaseModel]:
         # This is correct, but pydantic typings/mypy don't think so.
         return create_model(  # type: ignore[call-overload]
             "PromptInput",
@@ -133,10 +132,7 @@ class BasePromptTemplate(RunnableSerializable[Dict, PromptValue], ABC):
     def dict(self, **kwargs: Any) -> Dict:
         """Return dictionary representation of prompt."""
         prompt_dict = super().dict(**kwargs)
-        try:
-            prompt_dict["_type"] = self._prompt_type
-        except NotImplementedError:
-            pass
+        prompt_dict["_type"] = self._prompt_type
         return prompt_dict
 
     def save(self, file_path: Union[Path, str]) -> None:
@@ -152,12 +148,6 @@ class BasePromptTemplate(RunnableSerializable[Dict, PromptValue], ABC):
         """
         if self.partial_variables:
             raise ValueError("Cannot save prompt with partial variables.")
-
-        # Fetch dictionary to save
-        prompt_dict = self.dict()
-        if "_type" not in prompt_dict:
-            raise NotImplementedError(f"Prompt {self} does not support saving.")
-
         # Convert file to Path object.
         if isinstance(file_path, str):
             save_path = Path(file_path)
@@ -166,6 +156,9 @@ class BasePromptTemplate(RunnableSerializable[Dict, PromptValue], ABC):
 
         directory_path = save_path.parent
         directory_path.mkdir(parents=True, exist_ok=True)
+
+        # Fetch dictionary to save
+        prompt_dict = self.dict()
 
         if save_path.suffix == ".json":
             with open(file_path, "w") as f:

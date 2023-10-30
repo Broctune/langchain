@@ -130,9 +130,7 @@ class JsonKeyOutputFunctionsParser(JsonOutputFunctionsParser):
     """The name of the key to return."""
 
     def parse_result(self, result: List[Generation], *, partial: bool = False) -> Any:
-        res = super().parse_result(result, partial=partial)
-        if partial and res is None:
-            return None
+        res = super().parse_result(result)
         return res.get(self.key_name) if partial else res[self.key_name]
 
 

@@ -54,8 +54,6 @@ class _MinimaxEndpointClient(BaseModel):
 
 
 class MinimaxCommon(BaseModel):
-    """Common parameters for Minimax large language models."""
-
     _client: _MinimaxEndpointClient
     model: str = "abab5.5-chat"
     """Model name to use."""

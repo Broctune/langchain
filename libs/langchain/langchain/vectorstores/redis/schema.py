@@ -22,22 +22,16 @@ if TYPE_CHECKING:
 
 
 class RedisDistanceMetric(str, Enum):
-    """Distance metrics for Redis vector fields."""
-
     l2 = "L2"
     cosine = "COSINE"
     ip = "IP"
 
 
 class RedisField(BaseModel):
-    """Base class for Redis fields."""
-
     name: str = Field(...)
 
 
 class TextFieldSchema(RedisField):
-    """Schema for text fields in Redis."""
-
     weight: float = 1
     no_stem: bool = False
     phonetic_matcher: Optional[str] = None
@@ -52,15 +46,13 @@ class TextFieldSchema(RedisField):
             self.name,
             weight=self.weight,
             no_stem=self.no_stem,
-            phonetic_matcher=self.phonetic_matcher,  # type: ignore
+            phonetic_matcher=self.phonetic_matcher,
             sortable=self.sortable,
             no_index=self.no_index,
         )
 
 
 class TagFieldSchema(RedisField):
-    """Schema for tag fields in Redis."""
-
     separator: str = ","
     case_sensitive: bool = False
     no_index: bool = False
@@ -79,8 +71,6 @@ class TagFieldSchema(RedisField):
 
 
 class NumericFieldSchema(RedisField):
-    """Schema for numeric fields in Redis."""
-
     no_index: bool = False
     sortable: Optional[bool] = False
 
@@ -91,15 +81,13 @@ class NumericFieldSchema(RedisField):
 
 
 class RedisVectorField(RedisField):
-    """Base class for Redis vector fields."""
-
     dims: int = Field(...)
     algorithm: object = Field(...)
     datatype: str = Field(default="FLOAT32")
     distance_metric: RedisDistanceMetric = Field(default="COSINE")
-    initial_cap: Optional[int] = None
+    initial_cap: int = Field(default=20000)
 
-    @validator("algorithm", "datatype", "distance_metric", pre=True, each_item=True)
+    @validator("distance_metric", pre=True)
     def uppercase_strings(cls, v: str) -> str:
         return v.upper()
 
@@ -111,59 +99,54 @@ class RedisVectorField(RedisField):
             )
         return v.upper()
 
-    def _fields(self) -> Dict[str, Any]:
-        field_data = {
-            "TYPE": self.datatype,
-            "DIM": self.dims,
-            "DISTANCE_METRIC": self.distance_metric,
-        }
-        if self.initial_cap is not None:  # Only include it if it's set
-            field_data["INITIAL_CAP"] = self.initial_cap
-        return field_data
-
 
 class FlatVectorField(RedisVectorField):
-    """Schema for flat vector fields in Redis."""
-
     algorithm: Literal["FLAT"] = "FLAT"
-    block_size: Optional[int] = None
+    block_size: int = Field(default=1000)
 
     def as_field(self) -> VectorField:
         from redis.commands.search.field import VectorField  # type: ignore
 
-        field_data = super()._fields()
-        if self.block_size is not None:
-            field_data["BLOCK_SIZE"] = self.block_size
-        return VectorField(self.name, self.algorithm, field_data)
+        return VectorField(
+            self.name,
+            self.algorithm,
+            {
+                "TYPE": self.datatype,
+                "DIM": self.dims,
+                "DISTANCE_METRIC": self.distance_metric,
+                "INITIAL_CAP": self.initial_cap,
+                "BLOCK_SIZE": self.block_size,
+            },
+        )
 
 
 class HNSWVectorField(RedisVectorField):
-    """Schema for HNSW vector fields in Redis."""
-
     algorithm: Literal["HNSW"] = "HNSW"
     m: int = Field(default=16)
     ef_construction: int = Field(default=200)
     ef_runtime: int = Field(default=10)
-    epsilon: float = Field(default=0.01)
+    epsilon: float = Field(default=0.8)
 
     def as_field(self) -> VectorField:
         from redis.commands.search.field import VectorField  # type: ignore
 
-        field_data = super()._fields()
-        field_data.update(
+        return VectorField(
+            self.name,
+            self.algorithm,
             {
+                "TYPE": self.datatype,
+                "DIM": self.dims,
+                "DISTANCE_METRIC": self.distance_metric,
+                "INITIAL_CAP": self.initial_cap,
                 "M": self.m,
                 "EF_CONSTRUCTION": self.ef_construction,
                 "EF_RUNTIME": self.ef_runtime,
                 "EPSILON": self.epsilon,
-            }
+            },
         )
-        return VectorField(self.name, self.algorithm, field_data)
 
 
 class RedisModel(BaseModel):
-    """Schema for Redis index."""
-
     # always have a content field for text
     text: List[TextFieldSchema] = [TextFieldSchema(name="content")]
     tag: Optional[List[TagFieldSchema]] = None
@@ -283,13 +266,10 @@ class RedisModel(BaseModel):
 
 
 def read_schema(
-    index_schema: Optional[Union[Dict[str, List[Any]], str, os.PathLike]]
+    index_schema: Optional[Union[Dict[str, str], str, os.PathLike]]
 ) -> Dict[str, Any]:
-    """Reads in the index schema from a dict or yaml file.
-
-    Check if it is a dict and return RedisModel otherwise, check if it's a path and
-    read in the file assuming it's a yaml file and return a RedisModel
-    """
+    # check if its a dict and return RedisModel otherwise, check if it's a path and
+    # read in the file assuming it's a yaml file and return a RedisModel
     if isinstance(index_schema, dict):
         return index_schema
     elif isinstance(index_schema, Path):

@@ -21,7 +21,8 @@ class Params(BaseModel, extra=Extra.allow):  # type: ignore[call-arg]
 
 
 class JavelinAIGateway(LLM):
-    """Javelin AI Gateway LLMs.
+    """
+    Wrapper around completions LLMs in the Javelin AI Gateway.
 
     To use, you should have the ``javelin_sdk`` python package installed.
     For more information, see https://docs.getjavelin.io

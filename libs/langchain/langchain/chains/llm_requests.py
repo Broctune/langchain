@@ -15,16 +15,7 @@ DEFAULT_HEADERS = {
 
 
 class LLMRequestsChain(Chain):
-    """Chain that requests a URL and then uses an LLM to parse results.
-
-    **Security Note**: This chain can make GET requests to arbitrary URLs,
-        including internal URLs.
-
-        Control access to who can run this chain and what network access
-        this chain has.
-
-        See https://python.langchain.com/docs/security for more information.
-    """
+    """Chain that requests a URL and then uses an LLM to parse results."""
 
     llm_chain: LLMChain
     requests_wrapper: TextRequestsWrapper = Field(

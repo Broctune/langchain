@@ -8,10 +8,6 @@ from langchain.llms.base import LLM
 from langchain.llms.utils import enforce_stop_tokens
 from langchain.pydantic_v1 import BaseModel, Extra, root_validator
 from langchain.schema.output import GenerationChunk
-from langchain.utilities.anthropic import (
-    get_num_tokens_anthropic,
-    get_token_ids_anthropic,
-)
 
 HUMAN_PROMPT = "\n\nHuman:"
 ASSISTANT_PROMPT = "\n\nAssistant:"
@@ -141,8 +137,6 @@ class LLMInputOutputAdapter:
 
 
 class BedrockBase(BaseModel, ABC):
-    """Base class for Bedrock models."""
-
     client: Any  #: :meta private:
 
     region_name: Optional[str] = None
@@ -227,10 +221,6 @@ class BedrockBase(BaseModel, ABC):
 
     def _get_provider(self) -> str:
         return self.model_id.split(".")[0]
-
-    @property
-    def _model_is_anthropic(self) -> bool:
-        return self._get_provider() == "anthropic"
 
     def _prepare_input_and_invoke(
         self,
@@ -328,7 +318,7 @@ class Bedrock(LLM, BedrockBase):
             from bedrock_langchain.bedrock_llm import BedrockLLM
 
             llm = BedrockLLM(
-                credentials_profile_name="default",
+                credentials_profile_name="default", 
                 model_id="amazon.titan-text-express-v1",
                 streaming=True
             )
@@ -403,15 +393,3 @@ class Bedrock(LLM, BedrockBase):
             return completion
 
         return self._prepare_input_and_invoke(prompt=prompt, stop=stop, **kwargs)
-
-    def get_num_tokens(self, text: str) -> int:
-        if self._model_is_anthropic:
-            return get_num_tokens_anthropic(text)
-        else:
-            return super().get_num_tokens(text)
-
-    def get_token_ids(self, text: str) -> List[int]:
-        if self._model_is_anthropic:
-            return get_token_ids_anthropic(text)
-        else:
-            return super().get_token_ids(text)

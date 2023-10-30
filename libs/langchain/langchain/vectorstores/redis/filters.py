@@ -10,8 +10,6 @@ from langchain.utilities.redis import TokenEscaper
 
 
 class RedisFilterOperator(Enum):
-    """RedisFilterOperator enumerator is used to create RedisFilterExpressions."""
-
     EQ = 1
     NE = 2
     LT = 3
@@ -25,8 +23,6 @@ class RedisFilterOperator(Enum):
 
 
 class RedisFilter:
-    """Collection of RedisFilterFields."""
-
     @staticmethod
     def text(field: str) -> "RedisText":
         return RedisText(field)
@@ -41,8 +37,6 @@ class RedisFilter:
 
 
 class RedisFilterField:
-    """Base class for RedisFilterFields."""
-
     escaper: "TokenEscaper" = TokenEscaper()
     OPERATORS: Dict[RedisFilterOperator, str] = {}
 
@@ -78,10 +72,8 @@ class RedisFilterField:
 
 
 def check_operator_misuse(func: Callable) -> Callable:
-    """Decorator to check for misuse of equality operators."""
-
     @wraps(func)
-    def wrapper(instance: Any, *args: Any, **kwargs: Any) -> Any:
+    def wrapper(instance: Any, *args: List[Any], **kwargs: Dict[str, Any]) -> Any:
         # Extracting 'other' from positional arguments or keyword arguments
         other = kwargs.get("other") if "other" in kwargs else None
         if not other:
@@ -101,7 +93,7 @@ def check_operator_misuse(func: Callable) -> Callable:
 
 
 class RedisTag(RedisFilterField):
-    """A RedisFilterField representing a tag in a Redis index."""
+    """A RedisTag is a RedisFilterField representing a tag in a Redis index."""
 
     OPERATORS: Dict[RedisFilterOperator, str] = {
         RedisFilterOperator.EQ: "==",
@@ -301,7 +293,7 @@ class RedisNum(RedisFilterField):
 
 
 class RedisText(RedisFilterField):
-    """A RedisFilterField representing a text field in a Redis index."""
+    """A RedisText is a RedisFilterField representing a text field in a Redis index."""
 
     OPERATORS = {
         RedisFilterOperator.EQ: "==",
@@ -369,7 +361,7 @@ class RedisText(RedisFilterField):
 
 
 class RedisFilterExpression:
-    """A logical expression of RedisFilterFields.
+    """A RedisFilterExpression is a logical expression of RedisFilterFields.
 
     RedisFilterExpressions can be combined using the & and | operators to create
     complex logical expressions that evaluate to the Redis Query language.

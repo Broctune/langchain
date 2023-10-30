@@ -1,4 +1,4 @@
-"""Interface with the LangChain Hub."""
+"""Push and pull to the LangChain Hub."""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Optional

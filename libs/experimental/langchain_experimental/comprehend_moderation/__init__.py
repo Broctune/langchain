@@ -7,25 +7,23 @@ from langchain_experimental.comprehend_moderation.base_moderation_callbacks impo
 )
 from langchain_experimental.comprehend_moderation.base_moderation_config import (
     BaseModerationConfig,
+    ModerationIntentConfig,
     ModerationPiiConfig,
-    ModerationPromptSafetyConfig,
     ModerationToxicityConfig,
 )
+from langchain_experimental.comprehend_moderation.intent import ComprehendIntent
 from langchain_experimental.comprehend_moderation.pii import ComprehendPII
-from langchain_experimental.comprehend_moderation.prompt_safety import (
-    ComprehendPromptSafety,
-)
 from langchain_experimental.comprehend_moderation.toxicity import ComprehendToxicity
 
 __all__ = [
     "BaseModeration",
     "ComprehendPII",
-    "ComprehendPromptSafety",
+    "ComprehendIntent",
     "ComprehendToxicity",
     "BaseModerationConfig",
     "ModerationPiiConfig",
     "ModerationToxicityConfig",
-    "ModerationPromptSafetyConfig",
+    "ModerationIntentConfig",
     "BaseModerationCallbackHandler",
     "AmazonComprehendModerationChain",
 ]

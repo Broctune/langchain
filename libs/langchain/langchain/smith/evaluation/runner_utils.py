@@ -5,6 +5,7 @@ from __future__ import annotations
 import functools
 import inspect
 import logging
+import warnings
 from enum import Enum
 from typing import (
     TYPE_CHECKING,
@@ -19,12 +20,9 @@ from typing import (
     cast,
 )
 
-from langsmith.client import Client
-from langsmith.evaluation import RunEvaluator
-from langsmith.run_helpers import as_runnable, is_traceable_function
+from langsmith import Client, RunEvaluator
 from langsmith.schemas import Dataset, DataType, Example
 
-from langchain._api import warn_deprecated
 from langchain.callbacks.manager import Callbacks
 from langchain.callbacks.tracers.evaluation import (
     EvaluatorCallbackHandler,
@@ -154,9 +152,6 @@ def _wrap_in_chain_factory(
         lcf = llm_or_chain_factory
         return lambda: lcf
     elif callable(llm_or_chain_factory):
-        if is_traceable_function(llm_or_chain_factory):
-            runnable_ = as_runnable(cast(Callable, llm_or_chain_factory))
-            return lambda: runnable_
         try:
             _model = llm_or_chain_factory()  # type: ignore[call-arg]
         except TypeError:
@@ -171,9 +166,6 @@ def _wrap_in_chain_factory(
             # It's not uncommon to do an LLM constructor instead of raw LLM,
             # so we'll unpack it for the user.
             return _model
-        elif is_traceable_function(cast(Callable, _model)):
-            runnable_ = as_runnable(cast(Callable, _model))
-            return lambda: runnable_
         elif not isinstance(_model, Runnable):
             # This is unlikely to happen - a constructor for a model function
             return lambda: RunnableLambda(constructor)
@@ -887,8 +879,7 @@ def _prepare_eval_run(
             f"Project {project_name} already exists. Please use a different name."
         )
     print(
-        f"View the evaluation results for project '{project_name}'"
-        f" at:\n{project.url}?eval=true",
+        f"View the evaluation results for project '{project_name}' at:\n{project.url}",
         flush=True,
     )
     examples = list(client.list_examples(dataset_id=dataset.id))
@@ -918,7 +909,7 @@ def _prepare_run_on_dataset(
     )
     wrapped_model = _wrap_in_chain_factory(llm_or_chain_factory)
     run_evaluators = _setup_evaluation(
-        wrapped_model, examples, evaluation, dataset.data_type or DataType.kv
+        wrapped_model, examples, evaluation, dataset.data_type
     )
     _validate_example_inputs(examples[0], wrapped_model, input_mapper)
     progress_bar = progress.ProgressBarCallback(len(examples))
@@ -1007,15 +998,17 @@ async def arun_on_dataset(
 ) -> Dict[str, Any]:
     input_mapper = kwargs.pop("input_mapper", None)
     if input_mapper:
-        warn_deprecated("0.0.305", message=_INPUT_MAPPER_DEP_WARNING, pending=True)
+        warnings.warn(
+            _INPUT_MAPPER_DEP_WARNING,
+            DeprecationWarning,
+        )
 
     if kwargs:
-        warn_deprecated(
-            "0.0.305",
-            message="The following arguments are deprecated and "
+        warnings.warn(
+            "The following arguments are deprecated and "
             "will be removed in a future release: "
             f"{kwargs.keys()}.",
-            removal="0.0.305",
+            DeprecationWarning,
         )
     client = client or Client()
     wrapped_model, project_name, examples, configs = _prepare_run_on_dataset(
@@ -1068,15 +1061,16 @@ def run_on_dataset(
 ) -> Dict[str, Any]:
     input_mapper = kwargs.pop("input_mapper", None)
     if input_mapper:
-        warn_deprecated("0.0.305", message=_INPUT_MAPPER_DEP_WARNING, pending=True)
-
+        warnings.warn(
+            _INPUT_MAPPER_DEP_WARNING,
+            DeprecationWarning,
+        )
     if kwargs:
-        warn_deprecated(
-            "0.0.305",
-            message="The following arguments are deprecated and "
+        warnings.warn(
+            "The following arguments are deprecated and "
             "will be removed in a future release: "
             f"{kwargs.keys()}.",
-            removal="0.0.305",
+            DeprecationWarning,
         )
     client = client or Client()
     wrapped_model, project_name, examples, configs = _prepare_run_on_dataset(
